@@ -1,0 +1,49 @@
+<view class="detail-page" wx:if="{{order}}">
+  <view class="status-card status-bg-{{order.status}}">
+    <text class="status-text">{{statusMap[order.status]}}</text>
+    <text class="status-desc" wx:if="{{order.status===0}}">请在30分钟内完成支付</text>
+    <text class="status-desc" wx:if="{{order.status===2}}">菜品制作中，请耐心等待</text>
+    <text class="status-desc" wx:if="{{order.status===3}}">订单已完成，欢迎评价</text>
+  </view>
+
+  <view class="info-card">
+    <view class="info-row"><text class="info-label">订单号</text><text>{{order.order_no}}</text></view>
+    <view class="info-row"><text class="info-label">类型</text><text>{{typeMap[order.order_type]}}</text></view>
+    <view class="info-row" wx:if="{{order.table_no}}"><text class="info-label">桌号</text><text>{{order.table_no}}号桌</text></view>
+    <view class="info-row" wx:if="{{order.contact_name}}"><text class="info-label">联系人</text><text>{{order.contact_name}}</text></view>
+    <view class="info-row" wx:if="{{order.contact_phone}}"><text class="info-label">电话</text><text>{{order.contact_phone}}</text></view>
+    <view class="info-row" wx:if="{{order.address}}"><text class="info-label">地址</text><text>{{order.address}}</text></view>
+    <view class="info-row" wx:if="{{order.remark}}"><text class="info-label">备注</text><text>{{order.remark}}</text></view>
+    <view class="info-row"><text class="info-label">下单时间</text><text>{{order.create_time}}</text></view>
+  </view>
+
+  <view class="items-card">
+    <text class="card-title">菜品明细</text>
+    <view class="item-row" wx:for="{{order.items}}" wx:key="id">
+      <image class="item-img" src="{{item.dish_image}}" mode="aspectFill"></image>
+      <view class="item-info">
+        <text class="item-name">{{item.dish_name}}</text>
+        <text class="item-spec" wx:if="{{item.spec_info}}">{{item.spec_info}}</text>
+        <text class="item-remark" wx:if="{{item.remark}}">备注: {{item.remark}}</text>
+      </view>
+      <view class="item-right">
+        <text class="item-price">¥{{item.price}}</text>
+        <text class="item-qty">x{{item.quantity}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="amount-card">
+    <view class="amount-row"><text>菜品合计</text><text>¥{{order.total_amount}}</text></view>
+    <view class="amount-row" wx:if="{{order.discount_amount>0}}"><text>优惠</text><text class="primary-color">-¥{{order.discount_amount}}</text></view>
+    <view class="amount-row" wx:if="{{order.delivery_fee>0}}"><text>配送费</text><text>¥{{order.delivery_fee}}</text></view>
+    <view class="amount-row total"><text>实付金额</text><text class="price">{{order.pay_amount}}</text></view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="pay-btn" wx:if="{{order.status===0}}" bindtap="payNow">立即支付</button>
+    <button class="aa-btn" wx:if="{{order.status===0&&order.is_merged}}" bindtap="aaPay">AA付款</button>
+    <button class="confirm-btn" wx:if="{{order.status===2&&order.order_type===2}}" bindtap="confirmReceive">确认收货</button>
+    <button class="review-btn" wx:if="{{order.status===3}}" bindtap="goReview">评价订单</button>
+  </view>
+</view>

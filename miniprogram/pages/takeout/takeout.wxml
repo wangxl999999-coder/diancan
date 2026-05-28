@@ -1,0 +1,40 @@
+<view class="takeout-page">
+  <view class="type-tabs">
+    <view class="tab {{orderType===2?'active':''}}" data-type="2" bindtap="switchType">外卖配送</view>
+    <view class="tab {{orderType===3?'active':''}}" data-type="3" bindtap="switchType">到店自提</view>
+  </view>
+
+  <view class="form-card">
+    <input placeholder="联系人" value="{{contactName}}" bindinput="function(e){this.setData({contactName:e.detail.value})}" />
+    <input placeholder="联系电话" type="number" value="{{contactPhone}}" bindinput="function(e){this.setData({contactPhone:e.detail.value})}" />
+    <textarea placeholder="配送地址" wx:if="{{orderType===2}}" value="{{address}}" bindinput="function(e){this.setData({address:e.detail.value})}}" />
+  </view>
+
+  <view class="category-tabs">
+    <scroll-view scroll-x class="cat-scroll">
+      <text class="cat-item {{activeCategory===index?'active':''}}" wx:for="{{categories}}" wx:key="id" data-index="{{index}}" bindtap="switchCategory">{{item.name}}</text>
+    </scroll-view>
+  </view>
+
+  <view class="dish-list">
+    <view class="dish-card" wx:for="{{dishes}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+      <image class="dish-img" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="dish-info">
+        <text class="dish-name">{{item.name}}</text>
+        <text class="dish-sales">月售{{item.monthly_sales}}</text>
+        <view class="dish-bottom">
+          <text class="dish-price price">{{item.price}}</text>
+          <view class="add-btn" catchtap="quickAdd" data-dish="{{item}}">+</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="cart-info">
+      <text>🛒 {{cartCount}}件</text>
+      <text class="price">{{cartTotal}}</text>
+    </view>
+    <button class="submit-btn" bindtap="submitOrder">去下单</button>
+  </view>
+</view>

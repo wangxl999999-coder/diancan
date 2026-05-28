@@ -1,0 +1,73 @@
+<view class="cart-page">
+  <view class="order-type-tabs">
+    <view class="tab {{orderType===1?'active':''}}" data-type="1" bindtap="switchOrderType">堂食点餐</view>
+    <view class="tab {{orderType===2?'active':''}}" data-type="2" bindtap="switchOrderType">外卖配送</view>
+    <view class="tab {{orderType===3?'active':''}}" data-type="3" bindtap="switchOrderType">到店自提</view>
+  </view>
+
+  <view class="table-badge" wx:if="{{orderType===1&&tableNo}}">
+    <text>{{tableNo}}号桌</text>
+  </view>
+
+  <view class="delivery-form" wx:if="{{orderType===2}}">
+    <input placeholder="联系人" value="{{contactName}}" bindinput="onContactNameInput" />
+    <input placeholder="联系电话" type="number" value="{{contactPhone}}" bindinput="onContactPhoneInput" />
+    <input placeholder="配送地址" value="{{address}}" bindinput="onAddressInput" />
+  </view>
+
+  <view class="delivery-form" wx:if="{{orderType===3}}">
+    <input placeholder="联系人" value="{{contactName}}" bindinput="onContactNameInput" />
+    <input placeholder="联系电话" type="number" value="{{contactPhone}}" bindinput="onContactPhoneInput" />
+  </view>
+
+  <view class="cart-items">
+    <view class="cart-item" wx:for="{{cartList}}" wx:key="cartKey">
+      <image class="item-img" src="{{item.dishImage}}" mode="aspectFill"></image>
+      <view class="item-info">
+        <text class="item-name">{{item.dishName}}</text>
+        <text class="item-spec" wx:if="{{item.specInfo}}">{{item.specInfo}}</text>
+        <text class="item-remark" wx:if="{{item.remark}}">备注: {{item.remark}}</text>
+        <view class="item-bottom">
+          <text class="item-price price">{{item.totalPrice}}</text>
+          <view class="qty-control">
+            <text class="qty-btn" data-key="{{item.cartKey}}" data-type="minus" bindtap="changeQty">-</text>
+            <text class="qty-num">{{item.quantity}}</text>
+            <text class="qty-btn" data-key="{{item.cartKey}}" data-type="plus" bindtap="changeQty">+</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="empty-tip" wx:if="{{cartList.length===0}}">购物车是空的</view>
+  </view>
+
+  <view class="coupon-section" wx:if="{{couponList.length>0}}">
+    <text class="section-label">优惠券</text>
+    <view class="coupon-item {{selectedCouponId===item.id?'selected':''}}" wx:for="{{couponList}}" wx:key="id" data-coupon="{{item}}" bindtap="selectCoupon">
+      <text class="coupon-name">{{item.name}}</text>
+      <text class="coupon-value" wx:if="{{item.type===1}}">-¥{{item.value}}</text>
+      <text class="coupon-value" wx:if="{{item.type===2}}">{{item.value*10}}折</text>
+      <text class="coupon-value" wx:if="{{item.type===3}}">-¥{{item.value}}</text>
+    </view>
+  </view>
+
+  <view class="remark-section">
+    <text class="section-label">订单备注</text>
+    <textarea class="remark-textarea" placeholder="如：不要辣、少放盐" value="{{remark}}" bindinput="onRemarkInput" maxlength="200" />
+  </view>
+
+  <view class="summary">
+    <view class="summary-row"><text>菜品合计</text><text>¥{{cartTotal}}</text></view>
+    <view class="summary-row" wx:if="{{couponDiscount>0}}"><text>优惠</text><text class="primary-color">-¥{{couponDiscount}}</text></view>
+    <view class="summary-row" wx:if="{{deliveryFee>0}}"><text>配送费</text><text>¥{{deliveryFee}}</text></view>
+    <view class="summary-row total"><text>实付</text><text class="price">{{payAmount}}</text></view>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="pay-info">
+      <text class="pay-label">合计：</text>
+      <text class="pay-amount price">{{payAmount}}</text>
+    </view>
+    <button class="submit-btn" bindtap="submitOrder">微信支付</button>
+    <button class="later-btn" bindtap="payLater">先吃后付</button>
+  </view>
+</view>

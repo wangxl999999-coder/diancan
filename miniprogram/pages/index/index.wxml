@@ -1,0 +1,39 @@
+<view class="index-page">
+  <view class="hero">
+    <view class="hero-bg"></view>
+    <view class="hero-content">
+      <image class="hero-logo" src="/images/logo.png" mode="aspectFit"></image>
+      <text class="hero-title">智慧点餐</text>
+      <text class="hero-desc">扫码点餐 · 方便快捷</text>
+    </view>
+  </view>
+
+  <view class="action-area">
+    <view class="action-card" bindtap="scanCode">
+      <view class="action-icon scan-icon">
+        <text class="iconfont">📷</text>
+      </view>
+      <text class="action-title">扫码点餐</text>
+      <text class="action-desc">扫描桌上二维码，即刻点餐</text>
+    </view>
+
+    <view class="action-card" bindtap="goTakeout">
+      <view class="action-icon takeout-icon">
+        <text class="iconfont">🛵</text>
+      </view>
+      <text class="action-title">外卖/自提</text>
+      <text class="action-desc">外卖配送或到店自提</text>
+    </view>
+  </view>
+
+  <view class="table-info" wx:if="{{tableNo}}">
+    <view class="table-card">
+      <text class="table-label">当前桌号</text>
+      <text class="table-number">{{tableNo}}号桌</text>
+      <view class="table-status {{hasOrder?'busy':'free'}}">
+        {{hasOrder?'订单进行中':'空闲'}}
+      </view>
+    </view>
+    <button class="btn-primary start-btn" bindtap="startOrder">{{hasOrder?'继续点餐':'开始点餐'}}</button>
+  </view>
+</view>

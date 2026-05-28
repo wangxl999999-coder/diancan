@@ -1,0 +1,20 @@
+<view class="coupon-page">
+  <view class="tabs">
+    <view class="tab {{activeTab===index?'active':''}}" wx:for="{{tabs}}" wx:key="index" data-index="{{index}}" bindtap="switchTab">{{item}}</view>
+  </view>
+  <view class="coupon-list">
+    <view class="coupon-card" wx:for="{{couponList}}" wx:key="id">
+      <view class="coupon-left">
+        <text class="coupon-value" wx:if="{{item.type===1}}">¥{{item.value}}</text>
+        <text class="coupon-value" wx:if="{{item.type===2}}">{{item.value*10}}折</text>
+        <text class="coupon-value" wx:if="{{item.type===3}}">¥{{item.value}}</text>
+        <text class="coupon-condition">满{{item.min_amount}}可用</text>
+      </view>
+      <view class="coupon-right">
+        <text class="coupon-name">{{item.name}}</text>
+        <text class="coupon-date">{{item.start_time}} - {{item.end_time}}</text>
+      </view>
+    </view>
+    <view class="empty-tip" wx:if="{{couponList.length===0}}">暂无优惠券</view>
+  </view>
+</view>

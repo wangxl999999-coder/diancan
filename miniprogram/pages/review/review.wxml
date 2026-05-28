@@ -1,0 +1,21 @@
+<view class="review-page">
+  <view class="rating-section">
+    <text class="section-label">评分</text>
+    <rate value="{{rating}}" bind:change="onRatingChange" />
+  </view>
+
+  <view class="content-section">
+    <text class="section-label">评价内容</text>
+    <textarea class="review-textarea" placeholder="分享您的用餐体验" value="{{content}}" bindinput="onContentInput" maxlength="500" />
+  </view>
+
+  <view class="image-section">
+    <text class="section-label">上传图片</text>
+    <view class="image-list">
+      <image class="review-img" wx:for="{{images}}" wx:key="index" src="{{item}}" mode="aspectFill" data-index="{{index}}" bindtap="removeImage"></image>
+      <view class="add-img" bindtap="chooseImage" wx:if="{{images.length<3}}">+</view>
+    </view>
+  </view>
+
+  <button class="btn-primary submit-btn" bindtap="submitReview">提交评价</button>
+</view>

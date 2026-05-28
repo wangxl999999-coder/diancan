@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧点餐 - 管理后台</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body, #app { height: 100%; }
+        .layout { display: flex; height: 100%; }
+        .sidebar { width: 220px; background: #304156; color: #fff; overflow-y: auto; flex-shrink: 0; }
+        .sidebar .logo { height: 60px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; background: #263445; }
+        .sidebar .el-menu { border-right: none; }
+        .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 60px; background: #fff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .header .title { font-size: 16px; font-weight: bold; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; background: #f5f5f5; }
+        .stat-card { text-align: center; }
+        .stat-card .num { font-size: 28px; font-weight: bold; color: #409EFF; }
+        .stat-card .label { font-size: 14px; color: #999; margin-top: 5px; }
+        .el-table { margin-top: 15px; }
+        .filter-bar { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .tag-hot { color: #f56c6c; }
+        .tag-recommend { color: #e6a23c; }
+        .tag-limited { color: #409eff; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="layout" v-if="token">
+        <div class="sidebar">
+            <div class="logo">智慧点餐后台</div>
+            <el-menu :default-active="currentPage" background-color="#304156" text-color="#bfcbd9" active-text-color="#409EFF" @select="onMenuSelect">
+                <el-menu-item index="dashboard"><i class="el-icon-data-line"></i><span>数据概览</span></el-menu-item>
+                <el-menu-item index="category"><i class="el-icon-menu"></i><span>分类管理</span></el-menu-item>
+                <el-menu-item index="dish"><i class="el-icon-food"></i><span>菜品管理</span></el-menu-item>
+                <el-menu-item index="table"><i class="el-icon-office-building"></i><span>桌位管理</span></el-menu-item>
+                <el-menu-item index="order"><i class="el-icon-document"></i><span>订单管理</span></el-menu-item>
+                <el-menu-item index="member"><i class="el-icon-user"></i><span>会员管理</span></el-menu-item>
+                <el-menu-item index="coupon"><i class="el-icon-ticket"></i><span>优惠券管理</span></el-menu-item>
+                <el-menu-item index="review"><i class="el-icon-chat-dot-round"></i><span>评价管理</span></el-menu-item>
+                <el-menu-item index="setting"><i class="el-icon-setting"></i><span>系统设置</span></el-menu-item>
+            </el-menu>
+        </div>
+        <div class="main-area">
+            <div class="header">
+                <span class="title">{{pageTitle}}</span>
+                <el-button type="danger" size="small" @click="logout">退出登录</el-button>
+            </div>
+            <div class="content">
+                <div v-if="currentPage==='dashboard'">
+                    <el-row :gutter="20">
+                        <el-col :span="6" v-for="s in statsCards" :key="s.label">
+                            <el-card class="stat-card"><div class="num">{{s.value}}</div><div class="label">{{s.label}}</div></el-card>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" style="margin-top:20px">
+                        <el-col :span="14">
+                            <el-card><template #header>最近订单</template>
+                                <el-table :data="dashboard.recent_orders||[]" size="small">
+                                    <el-table-column prop="order_no" label="订单号" width="180"></el-table-column>
+                                    <el-table-column prop="member_name" label="用户" width="100"></el-table-column>
+                                    <el-table-column prop="total_amount" label="金额" width="80"></el-table-column>
+                                    <el-table-column prop="status" label="状态" width="80">
+                                        <template #default="scope">{{orderStatusText(scope.row.status)}}</template>
+                                    </el-table-column>
+                                    <el-table-column prop="create_time" label="时间"></el-table-column>
+                                </el-table>
+                            </el-card>
+                        </el-col>
+                        <el-col :span="10">
+                            <el-card><template #header>热销菜品</template>
+                                <el-table :data="dashboard.hot_dishes||[]" size="small">
+                                    <el-table-column prop="name" label="菜品"></el-table-column>
+                                    <el-table-column prop="monthly_sales" label="月销量" width="80"></el-table-column>
+                                </el-table>
+                            </el-card>
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <div v-if="currentPage==='category'">
+                    <div class="filter-bar"><el-button type="primary" @click="showCategoryDialog()">新增分类</el-button></div>
+                    <el-table :data="categories" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="name" label="分类名称"></el-table-column>
+                        <el-table-column prop="icon" label="图标"></el-table-column>
+                        <el-table-column prop="sort" label="排序" width="80"></el-table-column>
+                        <el-table-column prop="status" label="状态" width="80">
+                            <template #default="scope"><el-tag :type="scope.row.status==1?'success':'danger'">{{scope.row.status==1?'启用':'禁用'}}</el-tag></template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="150">
+                            <template #default="scope">
+                                <el-button size="small" @click="showCategoryDialog(scope.row)">编辑</el-button>
+                                <el-button size="small" type="danger" @click="deleteCategory(scope.row.id)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-dialog v-model="categoryDialogVisible" :title="categoryForm.id?'编辑分类':'新增分类'" width="400">
+                        <el-form :model="categoryForm" label-width="80px">
+                            <el-form-item label="名称"><el-input v-model="categoryForm.name"></el-input></el-form-item>
+                            <el-form-item label="图标"><el-input v-model="categoryForm.icon"></el-input></el-form-item>
+                            <el-form-item label="排序"><el-input-number v-model="categoryForm.sort" :min="0"></el-input-number></el-form-item>
+                            <el-form-item label="状态"><el-switch v-model="categoryForm.status" :active-value="1" :inactive-value="0"></el-switch></el-form-item>
+                        </el-form>
+                        <template #footer><el-button @click="categoryDialogVisible=false">取消</el-button><el-button type="primary" @click="saveCategory">保存</el-button></template>
+                    </el-dialog>
+                </div>
+
+                <div v-if="currentPage==='dish'">
+                    <div class="filter-bar">
+                        <el-select v-model="dishFilter.category_id" placeholder="选择分类" clearable style="width:150px" @change="loadDishes">
+                            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id"></el-option>
+                        </el-select>
+                        <el-input v-model="dishFilter.keyword" placeholder="搜索菜品名" style="width:200px" @keyup.enter="loadDishes"></el-input>
+                        <el-button type="primary" @click="loadDishes">搜索</el-button>
+                        <el-button type="success" @click="showDishDialog()">新增菜品</el-button>
+                    </div>
+                    <el-table :data="dishes" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="image" label="图片" width="80">
+                            <template #default="scope"><el-image :src="scope.row.image" style="width:50px;height:50px" fit="cover" v-if="scope.row.image"></el-image></template>
+                        </el-table-column>
+                        <el-table-column prop="name" label="名称" width="150"></el-table-column>
+                        <el-table-column prop="category_name" label="分类" width="80"></el-table-column>
+                        <el-table-column prop="price" label="价格" width="80"></el-table-column>
+                        <el-table-column prop="monthly_sales" label="月销量" width="80"></el-table-column>
+                        <el-table-column prop="tags" label="标签" width="150">
+                            <template #default="scope">
+                                <el-tag v-if="scope.row.tags&&scope.row.tags.includes('hot_sale')" type="danger" size="small" style="margin-right:4px">热销</el-tag>
+                                <el-tag v-if="scope.row.tags&&scope.row.tags.includes('recommend')" type="warning" size="small" style="margin-right:4px">推荐</el-tag>
+                                <el-tag v-if="scope.row.tags&&scope.row.tags.includes('limited_price')" size="small">特价</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="status" label="状态" width="70">
+                            <template #default="scope"><el-tag :type="scope.row.status==1?'success':'info'">{{scope.row.status==1?'上架':'下架'}}</el-tag></template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="150">
+                            <template #default="scope">
+                                <el-button size="small" @click="showDishDialog(scope.row)">编辑</el-button>
+                                <el-button size="small" :type="scope.row.status==1?'danger':'success'" @click="toggleDish(scope.row)">{{scope.row.status==1?'下架':'上架'}}</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination v-if="dishTotal>0" layout="prev,pager,next" :total="dishTotal" :page-size="dishPageSize" @current-change="loadDishes" style="margin-top:15px;text-align:right"></el-pagination>
+                    <el-dialog v-model="dishDialogVisible" :title="dishForm.id?'编辑菜品':'新增菜品'" width="700" :close-on-click-modal="false">
+                        <el-form :model="dishForm" label-width="80px">
+                            <el-row :gutter="20">
+                                <el-col :span="12"><el-form-item label="名称"><el-input v-model="dishForm.name"></el-input></el-form-item></el-col>
+                                <el-col :span="12"><el-form-item label="分类"><el-select v-model="dishForm.category_id" style="width:100%"><el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id"></el-option></el-select></el-form-item></el-col>
+                            </el-row>
+                            <el-row :gutter="20">
+                                <el-col :span="12"><el-form-item label="价格"><el-input-number v-model="dishForm.price" :min="0" :precision="2" style="width:100%"></el-input-number></el-form-item></el-col>
+                                <el-col :span="12"><el-form-item label="辣度"><el-select v-model="dishForm.spiciness" style="width:100%"><el-option label="不辣" :value="0"></el-option><el-option label="微辣" :value="1"></el-option><el-option label="中辣" :value="2"></el-option><el-option label="重辣" :value="3"></el-option></el-select></el-form-item></el-col>
+                            </el-row>
+                            <el-form-item label="图片"><el-input v-model="dishForm.image" placeholder="图片URL"></el-input></el-form-item>
+                            <el-form-item label="描述"><el-input type="textarea" v-model="dishForm.description" :rows="2"></el-input></el-form-item>
+                            <el-form-item label="配料"><el-input v-model="dishForm.ingredients" placeholder="多个配料用逗号分隔"></el-input></el-form-item>
+                            <el-row :gutter="20">
+                                <el-col :span="8"><el-form-item label="排序"><el-input-number v-model="dishForm.sort" :min="0" style="width:100%"></el-input-number></el-form-item></el-col>
+                                <el-col :span="8"><el-form-item label="状态"><el-switch v-model="dishForm.status" :active-value="1" :inactive-value="0"></el-switch></el-form-item></el-col>
+                            </el-row>
+                            <el-form-item label="标签">
+                                <el-checkbox-group v-model="dishForm.tagList">
+                                    <el-checkbox label="hot_sale">人气热销</el-checkbox>
+                                    <el-checkbox label="recommend">店长推荐</el-checkbox>
+                                    <el-checkbox label="limited_price">限时特价</el-checkbox>
+                                </el-checkbox-group>
+                            </el-form-item>
+                            <el-divider>规格设置</el-divider>
+                            <div v-for="(spec,gIdx) in dishForm.specs" :key="gIdx" style="margin-bottom:15px;border:1px solid #eee;padding:10px;border-radius:4px">
+                                <el-row :gutter="10">
+                                    <el-col :span="8"><el-input v-model="spec.name" placeholder="规格组名(如:份量)"></el-input></el-col>
+                                    <el-col :span="4"><el-switch v-model="spec.is_required" :active-value="1" :inactive-value="0" active-text="必选"></el-switch></el-col>
+                                    <el-col :span="4"><el-button type="danger" size="small" @click="dishForm.specs.splice(gIdx,1)">删除组</el-button></el-col>
+                                </el-row>
+                                <div v-for="(opt,oIdx) in spec.options" :key="oIdx" style="margin-top:8px;padding-left:20px">
+                                    <el-row :gutter="10">
+                                        <el-col :span="8"><el-input v-model="opt.name" placeholder="选项名(如:大份)" size="small"></el-input></el-col>
+                                        <el-col :span="6"><el-input-number v-model="opt.price" :min="0" :precision="2" size="small" placeholder="加价" style="width:100%"></el-input-number></el-col>
+                                        <el-col :span="4"><el-button type="danger" size="small" @click="spec.options.splice(oIdx,1)">删除</el-button></el-col>
+                                    </el-row>
+                                </div>
+                                <el-button size="small" type="primary" style="margin-top:8px;margin-left:20px" @click="spec.options.push({name:'',price:0})">+添加选项</el-button>
+                            </div>
+                            <el-button type="primary" size="small" @click="dishForm.specs.push({name:'',is_required:0,sort:0,options:[]})">+添加规格组</el-button>
+                            <el-divider>加料选项</el-divider>
+                            <div v-for="(addon,aIdx) in dishForm.addons" :key="aIdx" style="margin-bottom:8px">
+                                <el-row :gutter="10">
+                                    <el-col :span="8"><el-input v-model="addon.name" placeholder="加料名" size="small"></el-input></el-col>
+                                    <el-col :span="6"><el-input-number v-model="addon.price" :min="0" :precision="2" size="small" style="width:100%"></el-input-number></el-col>
+                                    <el-col :span="4"><el-button type="danger" size="small" @click="dishForm.addons.splice(aIdx,1)">删除</el-button></el-col>
+                                </el-row>
+                            </div>
+                            <el-button type="primary" size="small" @click="dishForm.addons.push({name:'',price:0,sort:0,status:1})">+添加加料</el-button>
+                        </el-form>
+                        <template #footer><el-button @click="dishDialogVisible=false">取消</el-button><el-button type="primary" @click="saveDish">保存</el-button></template>
+                    </el-dialog>
+                </div>
+
+                <div v-if="currentPage==='table'">
+                    <div class="filter-bar"><el-button type="primary" @click="showTableDialog()">新增桌位</el-button></div>
+                    <el-table :data="tables" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="table_no" label="桌号" width="100"></el-table-column>
+                        <el-table-column prop="area" label="区域" width="100"></el-table-column>
+                        <el-table-column prop="seats" label="座位数" width="80"></el-table-column>
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template #default="scope"><el-tag :type="scope.row.status==0?'success':scope.row.status==1?'danger':'warning'">{{scope.row.status==0?'空闲':scope.row.status==1?'已开台':'已预约'}}</el-tag></template>
+                        </el-table-column>
+                        <el-table-column prop="current_order_no" label="当前订单" width="180"></el-table-column>
+                        <el-table-column label="操作" width="200">
+                            <template #default="scope">
+                                <el-button size="small" @click="showTableDialog(scope.row)">编辑</el-button>
+                                <el-button size="small" type="success" v-if="scope.row.status==0" @click="openTable(scope.row.id)">开台</el-button>
+                                <el-button size="small" type="warning" v-if="scope.row.status==1" @click="closeTable(scope.row.id)">关台</el-button>
+                                <el-button size="small" type="danger" @click="deleteTable(scope.row.id)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-dialog v-model="tableDialogVisible" :title="tableForm.id?'编辑桌位':'新增桌位'" width="400">
+                        <el-form :model="tableForm" label-width="80px">
+                            <el-form-item label="桌号"><el-input v-model="tableForm.table_no"></el-input></el-form-item>
+                            <el-form-item label="区域"><el-input v-model="tableForm.area"></el-input></el-form-item>
+                            <el-form-item label="座位数"><el-input-number v-model="tableForm.seats" :min="1"></el-input-number></el-form-item>
+                        </el-form>
+                        <template #footer><el-button @click="tableDialogVisible=false">取消</el-button><el-button type="primary" @click="saveTable">保存</el-button></template>
+                    </el-dialog>
+                </div>
+
+                <div v-if="currentPage==='order'">
+                    <div class="filter-bar">
+                        <el-select v-model="orderFilter.status" placeholder="订单状态" clearable style="width:130px" @change="loadOrders">
+                            <el-option label="待支付" :value="0"></el-option><el-option label="已支付" :value="1"></el-option><el-option label="制作中" :value="2"></el-option><el-option label="已完成" :value="3"></el-option><el-option label="已取消" :value="4"></el-option>
+                        </el-select>
+                        <el-select v-model="orderFilter.order_type" placeholder="订单类型" clearable style="width:130px" @change="loadOrders">
+                            <el-option label="堂食" :value="1"></el-option><el-option label="外卖" :value="2"></el-option><el-option label="自提" :value="3"></el-option>
+                        </el-select>
+                        <el-input v-model="orderFilter.keyword" placeholder="搜索订单号/联系人" style="width:200px" @keyup.enter="loadOrders"></el-input>
+                        <el-button type="primary" @click="loadOrders">搜索</el-button>
+                    </div>
+                    <el-table :data="orders" border>
+                        <el-table-column prop="order_no" label="订单号" width="180"></el-table-column>
+                        <el-table-column prop="order_type" label="类型" width="70">
+                            <template #default="scope">{{scope.row.order_type==1?'堂食':scope.row.order_type==2?'外卖':'自提'}}</template>
+                        </el-table-column>
+                        <el-table-column prop="member_name" label="用户" width="100"></el-table-column>
+                        <el-table-column prop="table_no" label="桌号" width="70"></el-table-column>
+                        <el-table-column prop="total_amount" label="总额" width="80"></el-table-column>
+                        <el-table-column prop="pay_amount" label="实付" width="80"></el-table-column>
+                        <el-table-column prop="status" label="状态" width="80">
+                            <template #default="scope"><el-tag :type="orderTagType(scope.row.status)">{{orderStatusText(scope.row.status)}}</el-tag></template>
+                        </el-table-column>
+                        <el-table-column prop="create_time" label="下单时间" width="160"></el-table-column>
+                        <el-table-column label="操作" width="220">
+                            <template #default="scope">
+                                <el-button size="small" @click="viewOrder(scope.row)">详情</el-button>
+                                <el-button size="small" type="success" v-if="scope.row.status==1" @click="updateOrderStatus(scope.row.id,2)">制作</el-button>
+                                <el-button size="small" type="warning" v-if="scope.row.status==2" @click="updateOrderStatus(scope.row.id,3)">完成</el-button>
+                                <el-button size="small" type="danger" v-if="scope.row.status<2" @click="updateOrderStatus(scope.row.id,4)">取消</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination v-if="orderTotal>0" layout="prev,pager,next" :total="orderTotal" :page-size="orderPageSize" @current-change="loadOrders" style="margin-top:15px;text-align:right"></el-pagination>
+                    <el-dialog v-model="orderDetailVisible" title="订单详情" width="600">
+                        <template v-if="orderDetail">
+                            <el-descriptions :column="2" border>
+                                <el-descriptions-item label="订单号">{{orderDetail.order_no}}</el-descriptions-item>
+                                <el-descriptions-item label="状态">{{orderStatusText(orderDetail.status)}}</el-descriptions-item>
+                                <el-descriptions-item label="类型">{{orderDetail.order_type==1?'堂食':orderDetail.order_type==2?'外卖':'自提'}}</el-descriptions-item>
+                                <el-descriptions-item label="桌号">{{orderDetail.table_no||'-'}}</el-descriptions-item>
+                                <el-descriptions-item label="总金额">{{orderDetail.total_amount}}</el-descriptions-item>
+                                <el-descriptions-item label="实付金额">{{orderDetail.pay_amount}}</el-descriptions-item>
+                                <el-descriptions-item label="优惠">{{orderDetail.discount_amount}}</el-descriptions-item>
+                                <el-descriptions-item label="备注">{{orderDetail.remark||'-'}}</el-descriptions-item>
+                                <el-descriptions-item label="联系人">{{orderDetail.contact_name||'-'}}</el-descriptions-item>
+                                <el-descriptions-item label="联系电话">{{orderDetail.contact_phone||'-'}}</el-descriptions-item>
+                            </el-descriptions>
+                            <el-table :data="orderDetail.items" border size="small" style="margin-top:15px">
+                                <el-table-column prop="dish_name" label="菜品"></el-table-column>
+                                <el-table-column prop="price" label="单价" width="70"></el-table-column>
+                                <el-table-column prop="quantity" label="数量" width="60"></el-table-column>
+                                <el-table-column prop="addon_price" label="加料" width="60"></el-table-column>
+                                <el-table-column prop="remark" label="备注" width="100"></el-table-column>
+                            </el-table>
+                        </template>
+                    </el-dialog>
+                </div>
+
+                <div v-if="currentPage==='member'">
+                    <div class="filter-bar">
+                        <el-input v-model="memberFilter.keyword" placeholder="搜索昵称/手机号" style="width:200px" @keyup.enter="loadMembers"></el-input>
+                        <el-button type="primary" @click="loadMembers">搜索</el-button>
+                    </div>
+                    <el-table :data="members" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="avatar" label="头像" width="70">
+                            <template #default="scope"><el-avatar :src="scope.row.avatar" size="small" v-if="scope.row.avatar"></el-avatar></template>
+                        </el-table-column>
+                        <el-table-column prop="nickname" label="昵称" width="120"></el-table-column>
+                        <el-table-column prop="phone" label="手机号" width="130"></el-table-column>
+                        <el-table-column prop="points" label="积分" width="80"></el-table-column>
+                        <el-table-column prop="level" label="等级" width="60"></el-table-column>
+                        <el-table-column prop="create_time" label="注册时间"></el-table-column>
+                    </el-table>
+                    <el-pagination v-if="memberTotal>0" layout="prev,pager,next" :total="memberTotal" :page-size="memberPageSize" @current-change="loadMembers" style="margin-top:15px;text-align:right"></el-pagination>
+                </div>
+
+                <div v-if="currentPage==='coupon'">
+                    <div class="filter-bar"><el-button type="primary" @click="showCouponDialog()">新增优惠券</el-button></div>
+                    <el-table :data="coupons" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="name" label="名称" width="150"></el-table-column>
+                        <el-table-column prop="type" label="类型" width="80">
+                            <template #default="scope">{{scope.row.type==1?'满减':scope.row.type==2?'折扣':'立减'}}</template>
+                        </el-table-column>
+                        <el-table-column prop="value" label="面值/折扣" width="100">
+                            <template #default="scope">{{scope.row.type==2?(scope.row.value*10)+'折':scope.row.value+'元'}}</template>
+                        </el-table-column>
+                        <el-table-column prop="min_amount" label="门槛" width="80"></el-table-column>
+                        <el-table-column prop="used_count" label="已领" width="60"></el-table-column>
+                        <el-table-column prop="total_count" label="总量" width="60">
+                            <template #default="scope">{{scope.row.total_count||'不限'}}</template>
+                        </el-table-column>
+                        <el-table-column prop="status" label="状态" width="70">
+                            <template #default="scope"><el-tag :type="scope.row.status==1?'success':'info'">{{scope.row.status==1?'启用':'禁用'}}</el-tag></template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="150">
+                            <template #default="scope">
+                                <el-button size="small" @click="showCouponDialog(scope.row)">编辑</el-button>
+                                <el-button size="small" type="danger" @click="deleteCoupon(scope.row.id)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-dialog v-model="couponDialogVisible" :title="couponForm.id?'编辑优惠券':'新增优惠券'" width="450">
+                        <el-form :model="couponForm" label-width="80px">
+                            <el-form-item label="名称"><el-input v-model="couponForm.name"></el-input></el-form-item>
+                            <el-form-item label="类型"><el-select v-model="couponForm.type" style="width:100%"><el-option label="满减" :value="1"></el-option><el-option label="折扣" :value="2"></el-option><el-option label="立减" :value="3"></el-option></el-select></el-form-item>
+                            <el-form-item label="面值"><el-input-number v-model="couponForm.value" :precision="2" :min="0" style="width:100%"></el-input-number></el-form-item>
+                            <el-form-item label="门槛"><el-input-number v-model="couponForm.min_amount" :precision="2" :min="0" style="width:100%"></el-input-number></el-form-item>
+                            <el-form-item label="总量"><el-input-number v-model="couponForm.total_count" :min="0" style="width:100%"></el-input-number></el-form-item>
+                            <el-form-item label="开始时间"><el-date-picker v-model="couponForm.start_time" type="datetime" style="width:100%"></el-date-picker></el-form-item>
+                            <el-form-item label="结束时间"><el-date-picker v-model="couponForm.end_time" type="datetime" style="width:100%"></el-date-picker></el-form-item>
+                        </el-form>
+                        <template #footer><el-button @click="couponDialogVisible=false">取消</el-button><el-button type="primary" @click="saveCoupon">保存</el-button></template>
+                    </el-dialog>
+                </div>
+
+                <div v-if="currentPage==='review'">
+                    <el-table :data="reviews" border>
+                        <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                        <el-table-column prop="nickname" label="用户" width="100"></el-table-column>
+                        <el-table-column prop="rating" label="评分" width="80">
+                            <template #default="scope"><el-rate v-model="scope.row.rating" disabled></el-rate></template>
+                        </el-table-column>
+                        <el-table-column prop="content" label="评价内容" show-overflow-tooltip></el-table-column>
+                        <el-table-column prop="reply" label="商家回复" show-overflow-tooltip></el-table-column>
+                        <el-table-column prop="create_time" label="评价时间" width="160"></el-table-column>
+                        <el-table-column label="操作" width="180">
+                            <template #default="scope">
+                                <el-button size="small" type="primary" v-if="!scope.row.reply" @click="replyReview(scope.row)">回复</el-button>
+                                <el-button size="small" :type="scope.row.status==1?'danger':'success'" @click="toggleReview(scope.row)">{{scope.row.status==1?'隐藏':'显示'}}</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination v-if="reviewTotal>0" layout="prev,pager,next" :total="reviewTotal" :page-size="reviewPageSize" @current-change="loadReviews" style="margin-top:15px;text-align:right"></el-pagination>
+                </div>
+
+                <div v-if="currentPage==='setting'">
+                    <el-card>
+                        <el-form :model="settingForm" label-width="120px" style="max-width:500px">
+                            <el-form-item label="站点名称"><el-input v-model="settingForm.site_name"></el-input></el-form-item>
+                            <el-form-item label="联系电话"><el-input v-model="settingForm.site_phone"></el-input></el-form-item>
+                            <el-form-item label="积分比例"><el-input-number v-model="settingForm.points_rate" :min="0" :precision="1" style="width:100%"></el-input-number><div style="color:#999;font-size:12px">每消费1元获得积分</div></el-form-item>
+                            <el-form-item><el-button type="primary" @click="saveSettings">保存设置</el-button></el-form-item>
+                        </el-form>
+                    </el-card>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else style="display:flex;justify-content:center;align-items:center;height:100vh">
+        <el-card style="width:400px">
+            <h2 style="text-align:center;margin-bottom:20px">智慧点餐 管理后台</h2>
+            <el-form :model="loginForm" @submit.prevent="doLogin">
+                <el-form-item><el-input v-model="loginForm.username" prefix-icon="User" placeholder="用户名"></el-input></el-form-item>
+                <el-form-item><el-input v-model="loginForm.password" prefix-icon="Lock" placeholder="密码" type="password" show-password></el-input></el-form-item>
+                <el-form-item><el-button type="primary" style="width:100%" @click="doLogin" :loading="loginLoading">登录</el-button></el-form-item>
+            </el-form>
+        </el-card>
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/element-plus/dist/locale/zh-cn.js"></script>
+<script>
+const {createApp,ref,reactive,computed,onMounted,watch} = Vue;
+const app = createApp({
+    setup(){
+        const API = '';
+        const token = ref(localStorage.getItem('dc_token')||'');
+        const currentPage = ref('dashboard');
+        const loginForm = reactive({username:'',password:''});
+        const loginLoading = ref(false);
+
+        const request = (url, method='GET', data=null) => {
+            const opts = {method, headers:{}};
+            if(token.value) opts.headers['Authorization'] = 'Bearer '+token.value;
+            if(data) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(data); }
+            return fetch(API+url, opts).then(r=>r.json()).then(res=>{
+                if(res.code===401){token.value='';localStorage.removeItem('dc_token');}
+                return res;
+            });
+        };
+
+        const doLogin = async()=>{
+            loginLoading.value=true;
+            const res = await request('/api/admin/login','POST',loginForm);
+            loginLoading.value=false;
+            if(res.code===0){token.value=res.data.token;localStorage.setItem('dc_token',res.data.token);}
+            else{ElementPlus.ElMessage.error(res.msg);}
+        };
+        const logout = ()=>{token.value='';localStorage.removeItem('dc_token');};
+
+        const pageTitles={dashboard:'数据概览',category:'分类管理',dish:'菜品管理',table:'桌位管理',order:'订单管理',member:'会员管理',coupon:'优惠券管理',review:'评价管理',setting:'系统设置'};
+        const pageTitle = computed(()=>pageTitles[currentPage.value]||'');
+        const onMenuSelect = (idx)=>{currentPage.value=idx;loadPage(idx);};
+
+        const orderStatusText = (s)=>['待支付','已支付','制作中','已完成','已取消'][s]||'';
+        const orderTagType = (s)=>['warning','success','','success','info'][s]||'';
+
+        const dashboard = reactive({today_orders:0,today_amount:0,total_orders:0,total_amount:0,today_members:0,total_members:0,pending_orders:0,tables_in_use:0,recent_orders:[],hot_dishes:[]});
+        const statsCards = computed(()=>[
+            {label:'今日订单',value:dashboard.today_orders},{label:'今日营收',value:'¥'+dashboard.today_amount},
+            {label:'待处理',value:dashboard.pending_orders},{label:'使用中桌位',value:dashboard.tables_in_use}
+        ]);
+
+        const categories = ref([]);
+        const loadCategories = async()=>{const r=await request('/api/category/all');if(r.code===0)categories.value=r.data;};
+
+        const dishes = ref([]);const dishTotal=ref(0);const dishPageSize=20;const dishFilter=reactive({category_id:'',keyword:''});
+        const loadDishes = async(p=1)=>{const r=await request(`/api/dish/all?page=${p}&page_size=${dishPageSize}&category_id=${dishFilter.category_id||''}&keyword=${dishFilter.keyword||''}`);if(r.code===0){dishes.value=r.data.list;dishTotal.value=r.data.total;}};
+
+        const dishDialogVisible=ref(false);
+        const dishForm=reactive({id:0,name:'',category_id:'',price:0,description:'',ingredients:'',spiciness:0,image:'',sort:0,status:1,tagList:[],specs:[],addons:[]});
+        const showDishDialog=(row=null)=>{
+            if(row){Object.assign(dishForm,{id:row.id,name:row.name,category_id:row.category_id,price:row.price,description:row.description||'',ingredients:row.ingredients||'',spiciness:row.spiciness,image:row.image||'',sort:row.sort||0,status:row.status,tagList:row.tags||[],specs:[],addons:[]});}
+            else{Object.assign(dishForm,{id:0,name:'',category_id:'',price:0,description:'',ingredients:'',spiciness:0,image:'',sort:0,status:1,tagList:[],specs:[],addons:[]});}
+            dishDialogVisible.value=true;
+        };
+        const saveDish = async()=>{
+            const data={...dishForm,tags:dishForm.tagList};
+            delete data.tagList;
+            const url=dishForm.id?`/api/dish/update/${dishForm.id}`:'/api/dish/create';
+            const method=dishForm.id?'PUT':'POST';
+            const r=await request(url,method,data);
+            if(r.code===0){ElementPlus.ElMessage.success('保存成功');dishDialogVisible.value=false;loadDishes();}
+            else ElementPlus.ElMessage.error(r.msg);
+        };
+        const toggleDish=async(row)=>{const s=row.status==1?0:1;const r=await request(`/api/dish/update/${row.id}`,'PUT',{status:s});if(r.code===0)loadDishes();};
+
+        const tables=ref([]);const loadTables=async()=>{const r=await request('/api/table/list');if(r.code===0)tables.value=r.data;};
+        const tableDialogVisible=ref(false);const tableForm=reactive({id:0,table_no:'',area:'',seats:4});
+        const showTableDialog=(row=null)=>{if(row)Object.assign(tableForm,{id:row.id,table_no:row.table_no,area:row.area,seats:row.seats});else Object.assign(tableForm,{id:0,table_no:'',area:'',seats:4});tableDialogVisible.value=true;};
+        const saveTable=async()=>{const url=tableForm.id?`/api/table/update/${tableForm.id}`:'/api/table/create';const method=tableForm.id?'PUT':'POST';const r=await request(url,method,tableForm);if(r.code===0){ElementPlus.ElMessage.success('保存成功');tableDialogVisible.value=false;loadTables();}};
+        const openTable=async(id)=>{await request(`/api/table/open/${id}`,'PUT',{});loadTables();};
+        const closeTable=async(id)=>{await request(`/api/table/close/${id}`,'PUT',{});loadTables();};
+        const deleteTable=async(id)=>{await request(`/api/table/delete/${id}`,'DELETE');loadTables();};
+        const deleteCategory=async(id)=>{await request(`/api/category/delete/${id}`,'DELETE');loadCategories();};
+
+        const categoryDialogVisible=ref(false);const categoryForm=reactive({id:0,name:'',icon:'',sort:0,status:1});
+        const showCategoryDialog=(row=null)=>{if(row)Object.assign(categoryForm,{id:row.id,name:row.name,icon:row.icon||'',sort:row.sort||0,status:row.status});else Object.assign(categoryForm,{id:0,name:'',icon:'',sort:0,status:1});categoryDialogVisible.value=true;};
+        const saveCategory=async()=>{const url=categoryForm.id?`/api/category/update/${categoryForm.id}`:'/api/category/create';const method=categoryForm.id?'PUT':'POST';const r=await request(url,method,categoryForm);if(r.code===0){ElementPlus.ElMessage.success('保存成功');categoryDialogVisible.value=false;loadCategories();}else ElementPlus.ElMessage.error(r.msg);};
+
+        const orders=ref([]);const orderTotal=ref(0);const orderPageSize=20;const orderFilter=reactive({status:'',order_type:'',keyword:''});
+        const loadOrders=async(p=1)=>{const r=await request(`/api/order/all?page=${p}&page_size=${orderPageSize}&status=${orderFilter.status??''}&order_type=${orderFilter.order_type??''}&keyword=${orderFilter.keyword||''}`);if(r.code===0){orders.value=r.data.list;orderTotal.value=r.data.total;}};
+        const updateOrderStatus=async(id,status)=>{await request(`/api/order/status/${id}`,'PUT',{status});loadOrders();};
+        const orderDetailVisible=ref(false);const orderDetail=ref(null);
+        const viewOrder=async(row)=>{const r=await request(`/api/order/detail/${row.id}`);if(r.code===0){orderDetail.value=r.data;orderDetailVisible.value=true;}};
+
+        const members=ref([]);const memberTotal=ref(0);const memberPageSize=20;const memberFilter=reactive({keyword:''});
+        const loadMembers=async(p=1)=>{const r=await request(`/api/member/all?page=${p}&page_size=${memberPageSize}&keyword=${memberFilter.keyword||''}`);if(r.code===0){members.value=r.data.list;memberTotal.value=r.data.total;}};
+
+        const coupons=ref([]);const couponTotal=ref(0);const couponPageSize=20;
+        const loadCoupons=async(p=1)=>{const r=await request(`/api/coupon/all?page=${p}&page_size=${couponPageSize}`);if(r.code===0){coupons.value=r.data.list;couponTotal.value=r.data.total;}};
+        const couponDialogVisible=ref(false);const couponForm=reactive({id:0,name:'',type:1,value:0,min_amount:0,total_count:0,start_time:'',end_time:''});
+        const showCouponDialog=(row=null)=>{if(row)Object.assign(couponForm,{id:row.id,name:row.name,type:row.type,value:row.value,min_amount:row.min_amount,total_count:row.total_count,start_time:row.start_time,end_time:row.end_time});else Object.assign(couponForm,{id:0,name:'',type:1,value:0,min_amount:0,total_count:0,start_time:'',end_time:''});couponDialogVisible.value=true;};
+        const saveCoupon=async()=>{const url=couponForm.id?`/api/coupon/update/${couponForm.id}`:'/api/coupon/create';const method=couponForm.id?'PUT':'POST';const r=await request(url,method,couponForm);if(r.code===0){ElementPlus.ElMessage.success('保存成功');couponDialogVisible.value=false;loadCoupons();}};
+        const deleteCoupon=async(id)=>{await request(`/api/coupon/delete/${id}`,'DELETE');loadCoupons();};
+
+        const reviews=ref([]);const reviewTotal=ref(0);const reviewPageSize=20;
+        const loadReviews=async(p=1)=>{const r=await request(`/api/review/all?page=${p}&page_size=${reviewPageSize}`);if(r.code===0){reviews.value=r.data.list;reviewTotal.value=r.data.total;}};
+        const replyReview=async(row)=>{ElementPlus.ElMessageBox.prompt('请输入回复内容','回复评价').then(async({value})=>{await request('/api/review/reply','POST',{id:row.id,reply:value});loadReviews();}).catch(()=>{});};
+        const toggleReview=async(row)=>{await request(`/api/review/status/${row.id}`,'PUT',{status:row.status==1?0:1});loadReviews();};
+
+        const settingForm=reactive({site_name:'智慧点餐',site_phone:'',points_rate:1});
+        const loadSettings=async()=>{const r=await request('/api/setting/list?group=basic');if(r.code===0&&r.data){Object.keys(r.data).forEach(k=>{if(settingForm.hasOwnProperty(k))settingForm[k]=r.data[k];});}};
+        const saveSettings=async()=>{await request('/api/setting/save','POST',{group:'basic',settings:settingForm});ElementPlus.ElMessage.success('保存成功');};
+
+        const loadPage=(page)=>{
+            if(page==='dashboard')request('/api/stats/dashboard').then(r=>{if(r.code===0)Object.assign(dashboard,r.data);});
+            if(page==='category')loadCategories();
+            if(page==='dish'){loadCategories();loadDishes();}
+            if(page==='table')loadTables();
+            if(page==='order')loadOrders();
+            if(page==='member')loadMembers();
+            if(page==='coupon')loadCoupons();
+            if(page==='review')loadReviews();
+            if(page==='setting')loadSettings();
+        };
+
+        onMounted(()=>{if(token.value)loadPage('dashboard');});
+        watch(token,v=>{if(v)loadPage('dashboard');});
+
+        return {token,currentPage,loginForm,loginLoading,doLogin,logout,pageTitle,onMenuSelect,orderStatusText,orderTagType,dashboard,statsCards,categories,loadCategories,dishes,dishTotal,dishPageSize,dishFilter,loadDishes,dishDialogVisible,dishForm,showDishDialog,saveDish,toggleDish,tables,loadTables,tableDialogVisible,tableForm,showTableDialog,saveTable,openTable,closeTable,deleteTable,deleteCategory,categoryDialogVisible,categoryForm,showCategoryDialog,saveCategory,orders,orderTotal,orderPageSize,orderFilter,loadOrders,updateOrderStatus,orderDetailVisible,orderDetail,viewOrder,members,memberTotal,memberPageSize,memberFilter,loadMembers,coupons,couponTotal,couponPageSize,loadCoupons,couponDialogVisible,couponForm,showCouponDialog,saveCoupon,deleteCoupon,reviews,reviewTotal,reviewPageSize,loadReviews,replyReview,toggleReview,settingForm,loadSettings,saveSettings};
+    }
+});
+app.use(ElementPlus,{locale:ElementPlusLocaleZhCn});
+app.mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<view class="points-page">
+  <view class="points-header">
+    <text class="points-num">{{points}}</text>
+    <text class="points-label">当前积分</text>
+  </view>
+  <view class="points-list">
+    <view class="points-item" wx:for="{{pointsList}}" wx:key="id">
+      <view class="points-item-left">
+        <text class="points-item-remark">{{item.remark}}</text>
+        <text class="points-item-time">{{item.create_time}}</text>
+      </view>
+      <text class="points-item-val {{item.points>0?'plus':'minus'}}">{{item.points>0?'+':''}}{{item.points}}</text>
+    </view>
+    <view class="empty-tip" wx:if="{{pointsList.length===0}}">暂无积分记录</view>
+  </view>
+</view>

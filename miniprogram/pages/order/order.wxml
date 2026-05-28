@@ -1,0 +1,24 @@
+<view class="order-page">
+  <view class="tabs">
+    <view class="tab {{activeTab===index?'active':''}}" wx:for="{{tabs}}" wx:key="index" data-index="{{index}}" bindtap="switchTab">{{item}}</view>
+  </view>
+
+  <scroll-view class="order-list" scroll-y bindscrolltolower="loadMore">
+    <view class="order-card" wx:for="{{orders}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+      <view class="order-header">
+        <text class="order-no">{{item.order_no}}</text>
+        <text class="order-status status-{{item.status}}">{{statusText(item.status)}}</text>
+      </view>
+      <view class="order-type">{{orderTypeText(item.order_type)}} {{item.table_no?'· '+item.table_no+'号桌':''}}</view>
+      <view class="order-items">
+        <text wx:for="{{item.items}}" wx:key="id" wx:for-item="oi">{{oi.dish_name}} x{{oi.quantity}}　</text>
+      </view>
+      <view class="order-footer">
+        <text class="order-time">{{item.create_time}}</text>
+        <text class="order-total">¥{{item.pay_amount}}</text>
+      </view>
+    </view>
+    <view class="empty-tip" wx:if="{{orders.length===0}}">暂无订单</view>
+    <view class="load-more" wx:if="{{hasMore}}">加载更多...</view>
+  </scroll-view>
+</view>

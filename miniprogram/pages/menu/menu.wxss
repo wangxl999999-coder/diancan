@@ -1,0 +1,49 @@
+.menu-page { display: flex; flex-direction: column; height: 100vh; background: #f5f5f5; }
+.search-bar { padding: 10rpx 20rpx; background: #fff; }
+.table-badge { display: inline-block; background: #ff6b35; color: #fff; font-size: 24rpx; padding: 6rpx 20rpx; border-radius: 20rpx; }
+.search-box { padding: 15rpx 20rpx; background: #fff; }
+.search-input { background: #f5f5f5; border-radius: 30rpx; height: 64rpx; padding: 0 30rpx; font-size: 26rpx; }
+.price-filter { display: flex; align-items: center; padding: 10rpx 20rpx; background: #fff; gap: 10rpx; border-bottom: 1rpx solid #eee; }
+.price-input { width: 140rpx; height: 56rpx; border: 1rpx solid #ddd; border-radius: 8rpx; text-align: center; font-size: 24rpx; }
+.price-sep { color: #999; font-size: 24rpx; }
+.search-btn, .clear-btn { font-size: 24rpx; height: 56rpx; line-height: 56rpx; }
+
+.menu-body { display: flex; flex: 1; overflow: hidden; }
+.category-sidebar { width: 180rpx; background: #fff; border-right: 1rpx solid #eee; }
+.category-item { padding: 30rpx 20rpx; text-align: center; font-size: 26rpx; color: #666; position: relative; }
+.category-item.active { color: #ff6b35; background: #f5f5f5; font-weight: bold; }
+.category-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 6rpx; height: 40rpx; background: #ff6b35; border-radius: 3rpx; }
+
+.dish-list { flex: 1; padding: 15rpx; }
+.dish-card { display: flex; background: #fff; border-radius: 16rpx; padding: 20rpx; margin-bottom: 15rpx; }
+.dish-img { width: 180rpx; height: 180rpx; border-radius: 12rpx; flex-shrink: 0; }
+.dish-info { flex: 1; margin-left: 20rpx; display: flex; flex-direction: column; justify-content: space-between; }
+.dish-name { font-size: 30rpx; font-weight: bold; color: #333; }
+.dish-tags { display: flex; gap: 8rpx; margin-top: 8rpx; }
+.dish-sales { font-size: 22rpx; color: #999; margin-top: 6rpx; }
+.dish-bottom { display: flex; justify-content: space-between; align-items: center; }
+.dish-price { font-size: 34rpx; }
+.add-btn { width: 50rpx; height: 50rpx; background: #ff6b35; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36rpx; font-weight: bold; }
+
+.cart-bar { display: flex; align-items: center; background: #2c2c2c; height: 100rpx; padding: 0 20rpx; flex-shrink: 0; }
+.cart-left { flex: 1; display: flex; align-items: center; }
+.cart-icon-wrap { position: relative; margin-right: 15rpx; }
+.cart-icon { font-size: 48rpx; }
+.cart-badge { position: absolute; top: -10rpx; right: -20rpx; background: #ff6b35; color: #fff; font-size: 20rpx; min-width: 32rpx; height: 32rpx; border-radius: 16rpx; text-align: center; line-height: 32rpx; }
+.cart-total { color: #fff; font-size: 36rpx; }
+.checkout-btn { background: #ff6b35; color: #fff; border: none; border-radius: 44rpx; height: 76rpx; line-height: 76rpx; font-size: 28rpx; padding: 0 50rpx; }
+
+.cart-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+.cart-popup { position: fixed; left: 0; right: 0; bottom: 100rpx; background: #fff; border-radius: 20rpx 20rpx 0 0; max-height: 60vh; z-index: 100; transform: translateY(100%); transition: transform 0.3s; }
+.cart-popup.show { transform: translateY(0); }
+.cart-popup-header { display: flex; justify-content: space-between; align-items: center; padding: 25rpx 30rpx; border-bottom: 1rpx solid #eee; font-size: 30rpx; font-weight: bold; }
+.clear-btn-text { font-size: 26rpx; color: #999; font-weight: normal; }
+.cart-popup-list { max-height: 50vh; padding: 0 30rpx; }
+.cart-popup-item { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #f5f5f5; }
+.cart-popup-item-info { flex: 1; }
+.cart-popup-item-name { font-size: 28rpx; display: block; }
+.cart-popup-item-spec { font-size: 22rpx; color: #999; display: block; margin-top: 4rpx; }
+.cart-popup-item-price { margin: 0 20rpx; font-size: 28rpx; }
+.qty-control { display: flex; align-items: center; gap: 15rpx; }
+.qty-btn { width: 44rpx; height: 44rpx; border-radius: 22rpx; border: 1rpx solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 28rpx; }
+.qty-num { font-size: 28rpx; min-width: 30rpx; text-align: center; }

@@ -1,0 +1,56 @@
+<view class="mine-page">
+  <view class="user-header">
+    <block wx:if="{{isLogin&&userInfo}}">
+      <image class="avatar" src="{{userInfo.avatar||'/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="nickname">{{userInfo.nickname}}</text>
+        <text class="level">Lv{{userInfo.level}} · 积分{{userInfo.points}}</text>
+      </view>
+    </block>
+    <block wx:else>
+      <image class="avatar" src="/images/default-avatar.png" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="nickname" bindtap="goLogin">点击登录</text>
+        <text class="level">登录后享受更多服务</text>
+      </view>
+    </block>
+  </view>
+
+  <view class="stat-row" wx:if="{{isLogin}}">
+    <view class="stat-item" bindtap="goPoints">
+      <text class="stat-num">{{userInfo.points||0}}</text>
+      <text class="stat-label">积分</text>
+    </view>
+    <view class="stat-item" bindtap="goCoupon">
+      <text class="stat-num">优惠券</text>
+      <text class="stat-label">查看</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">Lv{{userInfo.level||1}}</text>
+      <text class="stat-label">等级</text>
+    </view>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-item" bindtap="scanCode">
+      <text class="menu-icon">📷</text>
+      <text class="menu-text">扫码点餐</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goCoupon">
+      <text class="menu-icon">🎫</text>
+      <text class="menu-text">我的优惠券</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goPoints">
+      <text class="menu-icon">⭐</text>
+      <text class="menu-text">积分明细</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <navigator class="menu-item" url="/pages/takeout/takeout">
+      <text class="menu-icon">🛵</text>
+      <text class="menu-text">外卖/自提</text>
+      <text class="menu-arrow">›</text>
+    </navigator>
+  </view>
+</view>

@@ -1,0 +1,28 @@
+.detail-page { padding-bottom: 120rpx; background: #f5f5f5; }
+.detail-hero { width: 100%; height: 450rpx; }
+.detail-info { background: #fff; padding: 30rpx; }
+.detail-name { font-size: 38rpx; font-weight: bold; display: block; }
+.detail-tags { display: flex; gap: 10rpx; margin-top: 15rpx; }
+.detail-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 15rpx; }
+.detail-price { font-size: 40rpx; }
+.detail-sales { font-size: 24rpx; color: #999; }
+.detail-desc { background: #fff; padding: 25rpx 30rpx; margin-top: 15rpx; }
+.section-label { font-size: 28rpx; font-weight: bold; color: #333; display: block; margin-bottom: 15rpx; }
+.desc-text { font-size: 26rpx; color: #666; line-height: 1.6; display: block; }
+
+.spec-section { background: #fff; padding: 25rpx 30rpx; margin-top: 15rpx; }
+.spec-options { display: flex; flex-wrap: wrap; gap: 15rpx; }
+.spec-option { padding: 14rpx 28rpx; border: 2rpx solid #ddd; border-radius: 8rpx; font-size: 26rpx; display: flex; align-items: center; gap: 8rpx; }
+.spec-option.selected { border-color: #ff6b35; color: #ff6b35; background: #fff8f5; }
+.spec-plus { font-size: 22rpx; color: #ff6b35; }
+
+.remark-section { background: #fff; padding: 25rpx 30rpx; margin-top: 15rpx; }
+.remark-input { border: 1rpx solid #eee; border-radius: 8rpx; height: 70rpx; padding: 0 20rpx; font-size: 26rpx; }
+
+.bottom-bar { position: fixed; left: 0; right: 0; bottom: 0; height: 110rpx; background: #fff; border-top: 1rpx solid #eee; display: flex; align-items: center; padding: 0 30rpx; }
+.qty-control { display: flex; align-items: center; gap: 15rpx; margin-right: 20rpx; }
+.qty-btn { width: 50rpx; height: 50rpx; border-radius: 25rpx; border: 1rpx solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 30rpx; }
+.qty-num { font-size: 30rpx; min-width: 40rpx; text-align: center; }
+.total-label { font-size: 26rpx; color: #666; }
+.total-price { font-size: 36rpx; margin-right: auto; }
+.add-cart-btn { background: #ff6b35; color: #fff; border: none; border-radius: 44rpx; height: 76rpx; line-height: 76rpx; font-size: 28rpx; padding: 0 40rpx; }
