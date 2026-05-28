@@ -63,9 +63,9 @@ $methodMap = [
 ];
 $httpPrefix = $methodMap[$method] ?? '';
 
-$actionMethod = $httpPrefix . ucfirst($action);
+$actionMethod = $httpPrefix . str_replace(' ', '', ucwords(str_replace('-', ' ', $action)));
 if (!method_exists($controller, $actionMethod)) {
-    $actionMethod = $action;
+    $actionMethod = str_replace(' ', '', ucwords(str_replace('-', ' ', $action)));
     if (!method_exists($controller, $actionMethod)) {
         Response::error('方法不存在', 404);
     }

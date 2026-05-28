@@ -14,6 +14,9 @@ App({
     var token = wx.getStorageSync('token');
     if (token) {
       this.globalData.token = token;
+      this.checkLogin();
+    } else {
+      this.navigateToLogin();
     }
     var cart = wx.getStorageSync('cart');
     if (cart) {
@@ -25,6 +28,33 @@ App({
       this.globalData.tableId = tableInfo.tableId;
       this.globalData.tableNo = tableInfo.tableNo;
     }
+  },
+
+  checkLogin: function () {
+    var that = this;
+    this.request({
+      url: '/member/info'
+    }).then(function (res) {
+      if (res.code === 0) {
+        that.globalData.userInfo = res.data;
+      } else {
+        that.navigateToLogin();
+      }
+    }).catch(function () {
+      that.navigateToLogin();
+    });
+  },
+
+  navigateToLogin: function () {
+    var pages = getCurrentPages();
+    var currentPage = pages.length > 0 ? pages[pages.length - 1].route : '';
+    if (currentPage !== 'pages/login/login') {
+      wx.redirectTo({ url: '/pages/login/login' });
+    }
+  },
+
+  isLoggedIn: function () {
+    return !!this.globalData.token && !!this.globalData.userInfo;
   },
 
   _buildCartMap: function () {

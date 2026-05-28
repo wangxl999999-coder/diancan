@@ -26,9 +26,9 @@ Page({
       tableId: app.globalData.tableId,
       tableNo: app.globalData.tableNo,
       orderType: orderType,
-      contactName: options.contactName || '',
+      contactName: options.contactName ? decodeURIComponent(options.contactName) : '',
       contactPhone: options.contactPhone || '',
-      address: options.address || '',
+      address: options.address ? decodeURIComponent(options.address) : '',
       deliveryFee: orderType === 2 ? 5 : 0
     });
     this.calcTotal();

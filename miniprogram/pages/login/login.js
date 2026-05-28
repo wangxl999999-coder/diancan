@@ -20,9 +20,10 @@ Page({
           }).then(function (result) {
             if (result.code === 0) {
               app.globalData.token = result.data.token;
+              app.globalData.userInfo = result.data.member;
               wx.setStorageSync('token', result.data.token);
               wx.showToast({ title: '登录成功', icon: 'success' });
-              setTimeout(function () { wx.navigateBack(); }, 800);
+              setTimeout(function () { that.redirectAfterLogin(); }, 800);
             } else {
               wx.showToast({ title: result.msg, icon: 'none' });
             }
@@ -69,12 +70,22 @@ Page({
     }).then(function (result) {
       if (result.code === 0) {
         app.globalData.token = result.data.token;
+        app.globalData.userInfo = result.data.member;
         wx.setStorageSync('token', result.data.token);
         wx.showToast({ title: '登录成功', icon: 'success' });
-        setTimeout(function () { wx.navigateBack(); }, 800);
+        setTimeout(function () { that.redirectAfterLogin(); }, 800);
       } else {
         wx.showToast({ title: result.msg, icon: 'none' });
       }
     });
+  },
+
+  redirectAfterLogin: function () {
+    var pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+    } else {
+      wx.switchTab({ url: '/pages/menu/menu' });
+    }
   }
 });
