@@ -168,8 +168,8 @@ CREATE TABLE `dc_order_item` (
 -- 会员表
 CREATE TABLE `dc_member` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `openid` varchar(100) NOT NULL DEFAULT '',
-  `unionid` varchar(100) NOT NULL DEFAULT '',
+  `openid` varchar(100) DEFAULT NULL,
+  `unionid` varchar(100) DEFAULT NULL,
   `nickname` varchar(100) NOT NULL DEFAULT '',
   `avatar` varchar(255) NOT NULL DEFAULT '',
   `phone` varchar(20) NOT NULL DEFAULT '',

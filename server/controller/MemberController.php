@@ -26,7 +26,7 @@ class MemberController
         if (!$member) {
             $memberId = $this->db->insert('member', [
                 'openid' => $openid,
-                'unionid' => $res['unionid'] ?? '',
+                'unionid' => $res['unionid'] ?? null,
                 'nickname' => $data['nickname'] ?? '微信用户',
                 'avatar' => $data['avatar'] ?? '',
                 'create_time' => date('Y-m-d H:i:s')
@@ -36,7 +36,7 @@ class MemberController
         $token = Auth::generateToken([
             'type' => 'member',
             'id' => $member['id'],
-            'openid' => $member['openid'],
+            'openid' => $member['openid'] ?? '',
             'exp' => time() + 86400 * 30
         ]);
         Response::success(['token' => $token, 'member' => $this->formatMember($member)]);
@@ -53,8 +53,8 @@ class MemberController
         $member = $this->db->fetch("SELECT * FROM " . $this->db->table('member') . " WHERE phone = :phone", [':phone' => $phone]);
         if (!$member) {
             $memberId = $this->db->insert('member', [
-                'phone' => $phone,
                 'nickname' => '用户' . substr($phone, -4),
+                'phone' => $phone,
                 'create_time' => date('Y-m-d H:i:s')
             ]);
             $member = $this->db->fetch("SELECT * FROM " . $this->db->table('member') . " WHERE id = :id", [':id' => $memberId]);
@@ -62,7 +62,7 @@ class MemberController
         $token = Auth::generateToken([
             'type' => 'member',
             'id' => $member['id'],
-            'openid' => $member['openid'],
+            'openid' => $member['openid'] ?? '',
             'exp' => time() + 86400 * 30
         ]);
         Response::success(['token' => $token, 'member' => $this->formatMember($member)]);
