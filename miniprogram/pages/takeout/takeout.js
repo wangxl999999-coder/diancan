@@ -78,6 +78,18 @@ Page({
     wx.navigateTo({ url: '/pages/dish-detail/dish-detail?id=' + e.currentTarget.dataset.id });
   },
 
+  onContactNameInput: function (e) {
+    this.setData({ contactName: e.detail.value });
+  },
+
+  onContactPhoneInput: function (e) {
+    this.setData({ contactPhone: e.detail.value });
+  },
+
+  onAddressInput: function (e) {
+    this.setData({ address: e.detail.value });
+  },
+
   submitOrder: function () {
     if (this.data.cartCount === 0) {
       wx.showToast({ title: '请选择菜品', icon: 'none' }); return;
@@ -88,6 +100,6 @@ Page({
     if (this.data.orderType === 2 && !this.data.address) {
       wx.showToast({ title: '请填写配送地址', icon: 'none' }); return;
     }
-    wx.navigateTo({ url: '/pages/cart/cart' });
+    wx.navigateTo({ url: '/pages/cart/cart?orderType=' + this.data.orderType + '&contactName=' + encodeURIComponent(this.data.contactName) + '&contactPhone=' + this.data.contactPhone + '&address=' + encodeURIComponent(this.data.address) });
   }
 });

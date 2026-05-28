@@ -5,7 +5,7 @@ return [
         'port' => 3306,
         'name' => 'diancan',
         'user' => 'root',
-        'pass' => '',
+        'pass' => '123123',
         'charset' => 'utf8mb4',
         'prefix' => 'dc_'
     ],

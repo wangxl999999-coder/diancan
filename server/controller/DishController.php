@@ -92,7 +92,9 @@ class DishController
             $params[':cid'] = $categoryId;
         }
 
-        $total = $this->db->count('dish d', $where, $params);
+        $totalSql = "SELECT COUNT(*) as cnt FROM " . $this->db->table('dish') . " d WHERE {$where}";
+        $totalRow = $this->db->fetch($totalSql, $params);
+        $total = (int)$totalRow['cnt'];
         $offset = ($page - 1) * $pageSize;
         $sql = "SELECT d.*, c.name as category_name FROM " . $this->db->table('dish') . " d LEFT JOIN " . $this->db->table('category') . " c ON d.category_id = c.id WHERE {$where} ORDER BY d.sort ASC, d.id DESC LIMIT {$offset},{$pageSize}";
         $list = $this->db->fetchAll($sql, $params);

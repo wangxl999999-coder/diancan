@@ -5,9 +5,9 @@
   </view>
 
   <view class="form-card">
-    <input placeholder="联系人" value="{{contactName}}" bindinput="function(e){this.setData({contactName:e.detail.value})}" />
-    <input placeholder="联系电话" type="number" value="{{contactPhone}}" bindinput="function(e){this.setData({contactPhone:e.detail.value})}" />
-    <textarea placeholder="配送地址" wx:if="{{orderType===2}}" value="{{address}}" bindinput="function(e){this.setData({address:e.detail.value})}}" />
+    <input placeholder="联系人" value="{{contactName}}" bindinput="onContactNameInput" />
+    <input placeholder="联系电话" type="number" value="{{contactPhone}}" bindinput="onContactPhoneInput" />
+    <textarea placeholder="配送地址" wx:if="{{orderType===2}}" value="{{address}}" bindinput="onAddressInput" />
   </view>
 
   <view class="category-tabs">

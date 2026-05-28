@@ -1,6 +1,6 @@
 App({
   globalData: {
-    baseUrl: 'https://your-domain.com/api',
+    baseUrl: 'http://localhost/api',
     userInfo: null,
     token: '',
     tableId: 0,

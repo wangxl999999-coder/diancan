@@ -19,11 +19,17 @@ Page({
     deliveryFee: 0
   },
 
-  onLoad: function () {
+  onLoad: function (options) {
+    var orderType = options.orderType ? parseInt(options.orderType) : 1;
     this.setData({
       cartList: app.globalData.cart,
       tableId: app.globalData.tableId,
-      tableNo: app.globalData.tableNo
+      tableNo: app.globalData.tableNo,
+      orderType: orderType,
+      contactName: options.contactName || '',
+      contactPhone: options.contactPhone || '',
+      address: options.address || '',
+      deliveryFee: orderType === 2 ? 5 : 0
     });
     this.calcTotal();
     this.loadCoupons();
@@ -109,6 +115,10 @@ Page({
     }
     if (this.data.orderType === 2 && (!this.data.contactName || !this.data.contactPhone || !this.data.address)) {
       wx.showToast({ title: '请填写配送信息', icon: 'none' });
+      return;
+    }
+    if (this.data.orderType === 3 && (!this.data.contactName || !this.data.contactPhone)) {
+      wx.showToast({ title: '请填写联系信息', icon: 'none' });
       return;
     }
 
